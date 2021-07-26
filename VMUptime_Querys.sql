@@ -63,65 +63,7 @@ order by VMName, grp;
 
 -- DELIMITER ;
 
-###################################
-#### final query for statistic (Old) ####
-###################################
-#use portal;
-SELECT UPTime_Logs.VMName,
-mod_reservations.active,
-CONCAT(ROUND(((Logins_logs.sum_time_deff/UPTime_Logs.sum_time_deff)*100), 1),'%') AS 'Percent'
-FROM (SELECT t.VMName,SUM(t.Time_Deff) AS 'sum_time_deff'
-		FROM (SELECT t.VMName,
-       TIMESTAMPDIFF(MINUTE, MAX(CASE WHEN action = 'in'  THEN dt end), MIN(CASE WHEN action = 'out' THEN dt end)) AS 'Time_Deff'
-FROM (SELECT t.*,
-             (@grp := IF(@VMName = VMName, IF(action = 'in', @grp + 1, @grp ),
-                         IF(@VMName := VMName, @grp + 1, @grp + 1)
-                        )
-             ) AS grp
-      FROM (SELECT VMName, Login AS dt, 'in' AS action
-            FROM Logins
-            UNION ALL
-            SELECT VMName, Logout, 'out'
-            FROM Logouts
-            WHERE VMName LIKE CONCAT('%-Persistent-%')
-            UNION ALL
-            SELECT DISTINCT Logins.VMName, UTC_TIMESTAMP () AS dt, 'out' AS 'action'
-            FROM Logins, Reservations
-            WHERE Logins.VMName = Reservations.VMName AND Reservations.End >= UTC_TIMESTAMP() AND Logins.VMName LIKE CONCAT('%-Persistent-%')
-            ORDER BY 1, 2
-           ) t CROSS JOIN
-           (SELECT @VMName := -1, @grp := -1) params
-     ) t
-GROUP BY VMName, grp
-ORDER BY VMName, grp) AS t
-GROUP BY VMName) AS Logins_logs,
-(SELECT t.VMName, SUM(t.Time_Deff) AS 'sum_time_deff'
-		FROM (SELECT t.VMName,
-       TIMESTAMPDIFF(MINUTE, MAX(CASE WHEN action = 'in' THEN dt end), MIN(CASE WHEN action = 'out' THEN dt end)) AS 'Time_Deff'
-FROM (SELECT t.*,
-             (@grp := IF(@VMName = VMName, IF(action = 'in', @grp + 1, @grp ),
-                         IF(@VMName := VMName, @grp + 1, @grp + 1)  
-                        )
-             ) as grp
-      FROM (SELECT VMName, Log AS dt, IF(Operation IN ('Powered-On', 'Created'),'in', 'out') AS 'action'
-			FROM VMUptime_Logs
-			UNION ALL
-            SELECT DISTINCT VMUptime_Logs.VMName, UTC_TIMESTAMP () AS dt, 'out' AS 'action'
-            FROM VMUptime_Logs, Reservations
-            WHERE VMUptime_Logs.VMName = Reservations.VMName AND Reservations.End >= UTC_TIMESTAMP()
-            ORDER BY 1, 2
-           ) t CROSS JOIN
-           (SELECT @VMName := -1, @grp := -1) params
-     ) AS t
-GROUP BY VMName, grp
-ORDER BY VMName, grp) AS t
-GROUP BY VMName) AS UPTime_Logs,
-(SELECT VMName, IF(Reservations.End >= UTC_TIMESTAMP(),'Active', 'Inactive') AS active FROM Reservations) AS mod_reservations
-WHERE UPTime_Logs.VMName = Logins_logs.VMName AND
-mod_reservations.VMName = Logins_logs.VMName AND
-mod_reservations.VMName = UPTime_Logs.VMName AND
-mod_reservations.active IN ('Active')
-GROUP BY UPTime_Logs.VMName;
+
 
 ##########################################################
 #### final query for statistic for persistent (Final) ####
@@ -272,6 +214,66 @@ SUBSTRING_INDEX(mod_reservations.Email, '@', 1) In ('idanso') AND
 mod_reservations.active IN ('Active', 'Inactive')
 GROUP BY Logins_logs.VMName;
  
+ 
+#########################################
+#### final query for statistic (Old) ####
+#########################################
+#use portal;
+SELECT UPTime_Logs.VMName,
+mod_reservations.active,
+CONCAT(ROUND(((Logins_logs.sum_time_deff/UPTime_Logs.sum_time_deff)*100), 1),'%') AS 'Percent'
+FROM (SELECT t.VMName,SUM(t.Time_Deff) AS 'sum_time_deff'
+		FROM (SELECT t.VMName,
+       TIMESTAMPDIFF(MINUTE, MAX(CASE WHEN action = 'in'  THEN dt end), MIN(CASE WHEN action = 'out' THEN dt end)) AS 'Time_Deff'
+FROM (SELECT t.*,
+             (@grp := IF(@VMName = VMName, IF(action = 'in', @grp + 1, @grp ),
+                         IF(@VMName := VMName, @grp + 1, @grp + 1)
+                        )
+             ) AS grp
+      FROM (SELECT VMName, Login AS dt, 'in' AS action
+            FROM Logins
+            UNION ALL
+            SELECT VMName, Logout, 'out'
+            FROM Logouts
+            WHERE VMName LIKE CONCAT('%-Persistent-%')
+            UNION ALL
+            SELECT DISTINCT Logins.VMName, UTC_TIMESTAMP () AS dt, 'out' AS 'action'
+            FROM Logins, Reservations
+            WHERE Logins.VMName = Reservations.VMName AND Reservations.End >= UTC_TIMESTAMP() AND Logins.VMName LIKE CONCAT('%-Persistent-%')
+            ORDER BY 1, 2
+           ) t CROSS JOIN
+           (SELECT @VMName := -1, @grp := -1) params
+     ) t
+GROUP BY VMName, grp
+ORDER BY VMName, grp) AS t
+GROUP BY VMName) AS Logins_logs,
+(SELECT t.VMName, SUM(t.Time_Deff) AS 'sum_time_deff'
+		FROM (SELECT t.VMName,
+       TIMESTAMPDIFF(MINUTE, MAX(CASE WHEN action = 'in' THEN dt end), MIN(CASE WHEN action = 'out' THEN dt end)) AS 'Time_Deff'
+FROM (SELECT t.*,
+             (@grp := IF(@VMName = VMName, IF(action = 'in', @grp + 1, @grp ),
+                         IF(@VMName := VMName, @grp + 1, @grp + 1)  
+                        )
+             ) as grp
+      FROM (SELECT VMName, Log AS dt, IF(Operation IN ('Powered-On', 'Created'),'in', 'out') AS 'action'
+			FROM VMUptime_Logs
+			UNION ALL
+            SELECT DISTINCT VMUptime_Logs.VMName, UTC_TIMESTAMP () AS dt, 'out' AS 'action'
+            FROM VMUptime_Logs, Reservations
+            WHERE VMUptime_Logs.VMName = Reservations.VMName AND Reservations.End >= UTC_TIMESTAMP()
+            ORDER BY 1, 2
+           ) t CROSS JOIN
+           (SELECT @VMName := -1, @grp := -1) params
+     ) AS t
+GROUP BY VMName, grp
+ORDER BY VMName, grp) AS t
+GROUP BY VMName) AS UPTime_Logs,
+(SELECT VMName, IF(Reservations.End >= UTC_TIMESTAMP(),'Active', 'Inactive') AS active FROM Reservations) AS mod_reservations
+WHERE UPTime_Logs.VMName = Logins_logs.VMName AND
+mod_reservations.VMName = Logins_logs.VMName AND
+mod_reservations.VMName = UPTime_Logs.VMName AND
+mod_reservations.active IN ('Active')
+GROUP BY UPTime_Logs.VMName;
 ############ Test ################
  
 SELECT
