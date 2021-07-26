@@ -64,7 +64,7 @@ order by VMName, grp;
 -- DELIMITER ;
 
 ###################################
-#### final query for statistic ####
+#### final query for statistic (Old) ####
 ###################################
 #use portal;
 SELECT UPTime_Logs.VMName,
@@ -123,9 +123,9 @@ mod_reservations.VMName = UPTime_Logs.VMName AND
 mod_reservations.active IN ('Active')
 GROUP BY UPTime_Logs.VMName;
 
-################################################################
-#### final query for statistic for persistent (DEVELOPMENT) ####
-################################################################
+##########################################################
+#### final query for statistic for persistent (Final) ####
+##########################################################
 
 SELECT substring_index(substring_index(Logins_logs.VMName, '-(', -1),')-', 1) AS 'Owner',
 mod_reservations.Lab,
@@ -209,9 +209,9 @@ SUBSTRING_INDEX(mod_reservations.Email, '@', 1) In ('idanso') AND
 mod_reservations.active IN ('Active', 'Inactive')
 GROUP BY UPTime_Logs.VMName;
 
-################################################################
-#### final query for statistic for Regular (DEVELOPMENT) ####
-################################################################
+########################################################
+#### final query for statistic for Regular (Final) #####
+#########################################################
 
 SELECT substring_index(substring_index(Logins_logs.VMName, '-(', -1),')-', 1) AS 'Owner',
 mod_reservations.Lab,
