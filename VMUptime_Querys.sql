@@ -158,7 +158,7 @@ Lab IN ('Defense Flow','SSL Inspection','Alteon and Analytics','Alteon Ansible A
 SUBSTRING_INDEX(mod_reservations.Email, '@', 1) In ('anandm','andylau','arunp','danielo','deanm','esteban.pierotti','gregd','haraldb','idanso','jesus.rojas','juann','krishna.gullapalli','maory','massimilianom','noaho','prateek.vishwanath','rajeev.shrestha','ricardom','shaheedb','siddharth.iyer','taly','virg.santos','vladimirv','xiaw','yarivk') AND
 mod_reservations.active IN ('Active', 'Deleted')
 GROUP BY Logins_logs.VMName, mod_reservations.VMName, differences.VMName, UPTime_Logs.VMName, `TotaL Duration`, `Powered-on (%)`, `Login/Powered-on (%)`
-ORDER BY Status;
+ORDER BY Status, mod_reservations.Start DESC;
 
 ########################################################
 #### final query for statistic for Regular (Final) #####
@@ -222,7 +222,7 @@ Lab IN ('Appwall') AND
 SUBSTRING_INDEX(mod_reservations.Email, '@', 1) In ('idanso') AND
 mod_reservations.active IN ('Active', 'Inactive')
 GROUP BY Logins_logs.VMName
-ORDER BY Status;
+ORDER BY Status, mod_reservations.Start DESC;
  
  
 #########################################
